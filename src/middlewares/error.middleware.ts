@@ -1,26 +1,46 @@
-import { Request, Response, NextFunction } from 'express';
-
-export interface AppError extends Error {
-  statusCode?: number;
-}
+import type { Request, Response, NextFunction } from 'express';
+import { HttpError } from '../shared/errors/http-error';
+import logger from '../config/logger';
 
 export const errorMiddleware = (
-  err: AppError,
+  err: Error | HttpError,
   req: Request,
   res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction
-) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
+): void => {
+  if (res.headersSent) {
+    return next(err);
+  }
 
-  console.error(`[ERROR] ${err.message}`, err.stack);
+  logger.error(err.message, {
+    path: req.path,
+    method: req.method,
+    stack: err.stack,
+  });
 
-  res.status(statusCode).json({
+  if (err instanceof HttpError) {
+    res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+      timestamp: err.timestamp,
+      statusCode: err.statusCode,
+    });
+    return;
+  }
+
+  res.status(500).json({
     success: false,
-    message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    message: 'Internal Server Error',
+    timestamp: new Date().toISOString(),
+    statusCode: 500,
   });
 };
 
-export default errorMiddleware;
+export const notFoundMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const error = new HttpError(`Route ${req.originalUrl} not found`, 404);
+  next(error);
+};

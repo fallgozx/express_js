@@ -1,32 +1,58 @@
-import { Request, Response, NextFunction } from 'express';
-import { verifyToken, type JwtPayload } from '../utils/jwt';
+import type { Request, Response, NextFunction } from 'express';
+import { verifyToken } from '../utils/jwt';
+import { UnauthorizedError } from '../shared/errors/http-error';
 
 export interface AuthRequest extends Request {
-  user?: JwtPayload;
+  user?: {
+    id: string;
+    email: string;
+  };
 }
 
-export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authMiddleware = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): void => {
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
-        success: false,
-        message: 'No token provided',
-      });
+      throw new UnauthorizedError('No token provided');
     }
 
-    const token = authHeader.substring(7);
+    const token = authHeader.split(' ')[1] || '';
     const decoded = verifyToken(token);
 
-    req.user = decoded;
+    if (!decoded) {
+      throw new UnauthorizedError('Invalid token');
+    }
+
+    req.user = decoded as { id: string; email: string };
     next();
   } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid or expired token',
-    });
+    next(error);
   }
 };
 
-export default authMiddleware;
+export const optionalAuthMiddleware = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1] || '';
+      const decoded = verifyToken(token);
+      
+      if (decoded) {
+        req.user = decoded as { id: string; email: string };
+      }
+    }
+    next();
+  } catch (error) {
+    next();
+  }
+};

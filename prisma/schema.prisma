@@ -11,6 +11,7 @@ datasource db {
 }
 
 
+// prisma/schema.prisma
 model User {
   id        String   @id @default(uuid())
   email     String   @unique

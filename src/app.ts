@@ -1,6 +1,5 @@
-import express, { Application } from 'express';
-import authRoutes from './routes/auth.routes';
-import userRoutes from './routes/user.routes';
+import express, { type Application } from 'express';
+import authRoutes from './modules/auth/routes/auth.routes';
 import { errorMiddleware } from './middlewares/error.middleware';
 import env from './config/env';
 
@@ -18,7 +17,6 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
 
 app.use(errorMiddleware);
 

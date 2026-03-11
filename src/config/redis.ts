@@ -1,29 +1,34 @@
-import { createClient, RedisClientType } from 'redis';
+import Redis from 'ioredis';
 import env from './env';
 
-let redisClient: RedisClientType | null = null;
+let redis: Redis | null = null;
 
-export const connectRedis = async (): Promise<RedisClientType> => {
-  if (redisClient) {
-    return redisClient;
+export const connectRedis = async (): Promise<Redis> => {
+  if (redis) {
+    return redis;
   }
 
-  redisClient = createClient({
-    url: env.REDIS_URL,
+  redis = new Redis(env.REDIS_URL, {
+    maxRetriesPerRequest: 3,
+    lazyConnect: true,
   });
 
-  redisClient.on('error', (err) => console.error('Redis Client Error', err));
-
-  await redisClient.connect();
-
-  return redisClient;
+  await redis.connect();
+  return redis;
 };
 
-export const getRedisClient = (): RedisClientType => {
-  if (!redisClient) {
-    throw new Error('Redis client not initialized. Call connectRedis first.');
+export const getRedis = (): Redis => {
+  if (!redis) {
+    throw new Error('Redis not connected. Call connectRedis() first.');
   }
-  return redisClient;
+  return redis;
 };
 
-export default connectRedis;
+export const disconnectRedis = async (): Promise<void> => {
+  if (redis) {
+    await redis.quit();
+    redis = null;
+  }
+};
+
+export default redis;

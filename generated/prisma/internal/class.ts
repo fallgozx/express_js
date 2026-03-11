@@ -55,8 +55,8 @@ const config: runtime.GetPrismaClientConfig = {
       }
     }
   },
-  "inlineSchema": "//******** AUTO GENERATED FILE, DO NOT EDIT.  *********\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        String   @id @default(uuid())\n  email     String   @unique\n  password  String\n  name      String?\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n",
-  "inlineSchemaHash": "87fc5f0d301ffe42e9df9bc2d768b63e86ff1f2b510d1479a538b11d3fb1e43d",
+  "inlineSchema": "//******** AUTO GENERATED FILE, DO NOT EDIT.  *********\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\n// prisma/schema.prisma\nmodel User {\n  id        String   @id @default(uuid())\n  email     String   @unique\n  password  String\n  name      String?\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n",
+  "inlineSchemaHash": "b6cb7d1c989e3c43a3958e878f8e43e68017c08e2e491567b3e84883539c4953",
   "copyEngine": true,
   "runtimeDataModel": {
     "models": {},
